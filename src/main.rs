@@ -19,18 +19,36 @@ use rp_pico as bsp;
 
 use bsp::hal::{pac, sio::Sio};
 
-static mut COUNTER: u32 = 0;
+use volatile_register::{RO, RW};
+
+#[repr(C)]
+struct SysTick {
+    pub csr: RW<u32>,
+    pub rvr: RW<u32>,
+    pub cvr: RW<u32>,
+    pub calib: RO<u32>,
+}
+
+fn get_systick() -> &'static mut SysTick {
+    unsafe { &mut *(0xE000_E010 as *mut SysTick) }
+}
+
+fn get_cvr() -> u32 {
+    let systick = get_systick();
+    systick.cvr.read()
+}
+
+fn get_csr() -> u32 {
+    let systick = get_systick();
+    systick.csr.read()
+}
 
 fn delay_ms(ms: u32) {
-    let st: u32 = unsafe { COUNTER };
-    let mut c: u32 = 3;
-    let mut last_counter: u32 = st;
-    unsafe {
-        while c > 0 {
-            if last_counter != COUNTER {
-                c -= 1;
-                last_counter = COUNTER;
-            }
+    let mut counter = ms / 10;
+    while counter > 0 {
+        // csr's bit 17 is set when it passes reload ticks
+        if get_csr() & (1 << 16) != 0 {
+            counter -= 1;
         }
     }
 }
@@ -59,42 +77,44 @@ fn main() -> ! {
         bsp::hal::gpio::Output<bsp::hal::gpio::PushPull>,
     > = pins.led.into_push_pull_output();
 
-    // let core = pac::CorePeripherals::take().unwrap();
     let mut syst = core.SYST;
-
     syst.set_clock_source(SystClkSource::Core);
-    syst.set_reload(12_000_000u32);
+    syst.set_reload(12_000_000u32 / 10);
     syst.clear_current();
     syst.enable_counter();
-    syst.enable_interrupt();
+    // syst.enable_interrupt();
 
     loop {
         info!("on!");
         led_pin.set_high().unwrap();
-        // delay.delay_ms(500);
-        delay_ms(500);
-        info!("off!");
-        led_pin.set_low().unwrap();
-        // delay.delay_ms(500);
-        delay_ms(500);
+        let mut t = get_cvr();
         info!(
-            "counter: {}, {}, {}",
+            "counter: {}, {}, {}, {}",
+            t,
             cortex_m::peripheral::SYST::get_reload(),
             cortex_m::peripheral::SYST::get_current(),
             cortex_m::peripheral::SYST::get_ticks_per_10ms()
         );
-        unsafe {
-            info!("counter: {}", COUNTER);
-        }
+
+        // delay.delay_ms(500);
+        delay_ms(1000);
+        info!("off!");
+        led_pin.set_low().unwrap();
+        // delay.delay_ms(500);
+        t = get_cvr();
+        info!(
+            "counter: {}, {}, {}, {}",
+            t,
+            cortex_m::peripheral::SYST::get_reload(),
+            cortex_m::peripheral::SYST::get_current(),
+            cortex_m::peripheral::SYST::get_ticks_per_10ms()
+        );
+        delay_ms(500);
     }
 }
 
 #[exception]
-fn SysTick() {
-    unsafe {
-        COUNTER += 1;
-    }
-}
+fn SysTick() {}
 
 #[exception]
 unsafe fn DefaultHandler(_irqn: i16) {}
