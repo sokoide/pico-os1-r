@@ -11,6 +11,8 @@ mod systimer;
 
 use rp_pico as bsp;
 
+pub static mut COUNTER: u32 = 0;
+
 #[entry]
 fn main() -> ! {
     info!("Program start");
@@ -20,11 +22,17 @@ fn main() -> ! {
 
     loop {
         info!("1");
-        exception::print_unsafe_counter();
+        print_unsafe_counter();
         st.delay_ms(500);
 
         info!("2");
-        exception::print_unsafe_counter();
+        print_unsafe_counter();
         st.delay_ms(500);
+    }
+}
+
+pub fn print_unsafe_counter() {
+    unsafe {
+        info!("unsafe counter: {}", crate::COUNTER);
     }
 }

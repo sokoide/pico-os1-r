@@ -3,10 +3,20 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Run in Emulator",
+            "command": "cd ${HOME}/repo/sokoide/rp2040js && npm start",
+            "preLaunchTask": "ihex",
+            "request": "launch",
+            "env": {
+                "picotarget": "/Users/scott/Projects/NoBackup/sokoide/pico-os1-rs/target/thumbv6m-none-eabi/debug/pico-os1-rs.hex"
+            },
+            "type": "node-terminal"
+        },
+        {
+            "name": "Debug with OpenOCD",
             "preLaunchTask": "rust: cargo build",
             "type": "probe-rs-debug",
             "request": "launch",
-            "name": "rp2040-project",
             "cwd": "${workspaceFolder}",
             "chip": "rp2040",
             // RP2040 doesn't support connectUnderReset

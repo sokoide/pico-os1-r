@@ -7,6 +7,11 @@
             "label": "rust: cargo build",
             "type": "shell",
             "command": "cargo build"
+        },
+        {
+            "label": "ihex",
+            "type": "shell",
+            "command": "cargo build && cargo objcopy -- -O ihex target/thumbv6m-none-eabi/debug/pico-os1-rs.hex"
         }
     ]
 }
