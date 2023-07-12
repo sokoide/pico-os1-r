@@ -16,8 +16,8 @@ all: main-build
 
 main-build: $(TARGETDIR)/$(BUILD_ARTIFACT) secondary-outputs
 
-$(TARGETDIR)/$(BUILD_ARTIFACT):
-	@echo making $<...
+$(TARGETDIR)/$(BUILD_ARTIFACT): *.rs
+	@echo making $@...
 	cargo build
 
 $(TARGETDIR)/$(BUILD_SIZE): $(TARGETDIR)/$(BUILD_ARTIFACT)
@@ -30,8 +30,8 @@ run: $(TARGETDIR)/$(BUILD_HEX)
 	@echo running $(picotarget)...
 	cd  $(EMULATOR_PATH) && npm start
 
-$(TARGETDIR)/$(BUILD_HEX):
-	cargo build && cargo objcopy -- -O ihex $<
+$(TARGETDIR)/$(BUILD_HEX): $(TARGETDIR)/$(BUILD_ARTIFACT)
+	cargo build && cargo objcopy -- -O ihex $@
 
 clean:
 	rm -rf ./target

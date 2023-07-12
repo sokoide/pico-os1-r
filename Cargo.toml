@@ -14,7 +14,7 @@ panic-probe = { version = "0.3", features = ["print-defmt"] }
 
 # We're using a Pico by default on this template
 rp-pico = "0.6.0"
-volatile = "0.5.1"
+volatile = "0.4.5"
 volatile-register = "0.2.1"
 
 # but you can use any BSP. Uncomment this to use the pro_micro_rp2040 BSP instead

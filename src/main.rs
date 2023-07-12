@@ -6,16 +6,17 @@ use defmt::*;
 use defmt_rtt as _;
 use panic_probe as _;
 
+use rp_pico as bsp;
+
 mod exception;
 mod systimer;
-
-use rp_pico as bsp;
 
 pub static mut COUNTER: u32 = 0;
 
 #[entry]
 fn main() -> ! {
     info!("Program start");
+    println!("*** hoge");
 
     let mut st = systimer::SystemTimer::new();
     st.init();
