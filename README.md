@@ -7,6 +7,7 @@
 * Install prereqs
 
 ```sh
+rustup target add thumbv6m-none-eabi
 cargo install cargo-generate
 cargo install flip-link probe-run elfuf2-rs probe-rs-debugger
 ```
